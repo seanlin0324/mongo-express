@@ -59,7 +59,7 @@ var dbOptions = {
   poolSize: config.mongodb.poolSize
 };
 var db = new mongodb.Db('local', new mongodb.Server(host, port, dbOptions), {safe:true});
-
+console.log(mongodb.Db)
 
 var connections = {};
 var databases = [];
@@ -70,16 +70,24 @@ var mainConn; //main db connection
 
 //Update the collections list
 var updateCollections = function(db, dbName, callback) {
-  db.collectionNames(function (err, result) {
-    var names = [];
+  // db.collectionNames(function (err, result) {
 
-    for (var r in result) {
-      var coll = utils.parseCollectionName(result[r].name);
-      names.push(coll.name);
+  db.listCollections().toArray(function(err, result) {
+    var names = [];
+    var i, count;
+    count = result.length;
+
+    for (i = 0; i < count; i += 1) {
+        names.push(result[i].name);
     }
+    // for (var r in result) {
+    //   // var coll = utils.parseCollectionName(result[r].name);
+    //   var coll = result[r].name;
+    //   names.push(coll.name);
+    // }
 
     collections[dbName] = names.sort();
-
+    console.log(collections)
     if (callback) {
       callback(err);
     }
@@ -134,13 +142,15 @@ db.open(function(err, db) {
   console.log('Database connected!');
 
   mainConn = db;
-
+  console.log(config.mongodb.admin);
   //Check if admin features are on
   if (config.mongodb.admin === true) {
+
     //get admin instance
     db.admin(function(err, a) {
+      console.log('123')
       adminDb = a;
-
+      console.log(adminDb);
       if (config.mongodb.adminUsername.length == 0) {
         console.log('Admin Database connected');
         updateDatabases(adminDb);
